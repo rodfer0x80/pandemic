@@ -1,0 +1,2 @@
+# pandemic
+interactive AI simulation
