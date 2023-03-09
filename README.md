@@ -5,6 +5,6 @@
 ------------
 Requirements
 ------------
-JDK17
-EclipseIDE
+- JDK17
+- EclipseIDE
 ````
