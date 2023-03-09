@@ -1,8 +1,10 @@
 # pandemic
-- interactive AI simulation
+> interactive AI simulation
 
-> Requirements
 ````
+------------
+Requirements
+------------
 JDK17
 EclipseIDE
 ````
