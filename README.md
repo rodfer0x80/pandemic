@@ -3,6 +3,6 @@
 
 ````
 Requirements
-Java 17
+JDK17
 EclipseIDE
 ````
