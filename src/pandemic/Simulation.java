@@ -31,9 +31,9 @@ public class Simulation {
 	private static int currentUser = 0;
 
 	//##Change this to your path.##
-	private static final String cityMapFileName= "c:/classes/cst3170/pandemic/fullMap.txt";
+	private static final String cityMapFileName= "./data/fullMap.txt";
 	private static final int NUMBER_USERS = 2;
-	private static final String[] userNames = {"Al","Bob"};
+	private static final String[] userNames = {"User","Agent"};
 
 
 	//The constants for the commands.
