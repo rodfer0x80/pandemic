@@ -13,6 +13,9 @@ import java.io.File;  // Import the File class
 import java.io.FileNotFoundException;  // Import this class to handle errors
 import java.util.Scanner; // Import the Scanner class to read text files
 import java.util.Random;
+import java.util.ArrayList;
+import java.util.Arrays; // save keypresses
+import java.util.Collections;
 
 //There's only one class in this program.  All functions are here, and it runs from
 //the main function.
@@ -20,22 +23,69 @@ public class Simulation {
 	//class variables on top
 	private static Scanner shellInput;    //These two are for the shell scanner.
 	private static boolean shellOpen = false;
-	//Note use a seed (1) for debugging.  
-	private static Random randomGenerator = new Random(1);
+	//Note use a seed (1337) for debugging.  
+	private static Random randomGenerator = new Random();
+	
+	// geography comes back to bite us
 	private static int numberCities = -1;	
 	private static int numberConnections = -1;	
 	private static String[] cities; //Cities
+	private static int lenCities = 48;
+	private static ArrayList<String> infectedCities = new ArrayList<String>(lenCities);;
 	private static int[] diseaseCubes; //Number of disease cubes in the associated city.
 	private static  int[][] connections; //The connections via offset in the cities array.
 	private static int[] userLocation = {0,0};  //These are the users' location that can change.
-	private static int currentUser = 0;
+	
+	// gay cards
+	private static int epidemicCards = 5;
+	private static int userDeckSize = 48 + epidemicCards;
+	private static int infectionDeckSize = 48;
+	private static int userDeckCardsRemoved = 0;
+	private static int discardDeckSize = 0;
+	private static ArrayList<String> userDeck = new ArrayList<String>(userDeckSize);
+	private static ArrayList<String> infectionDeck = new ArrayList<String>(infectionDeckSize);
+	private static ArrayList<String> discardDeck = new ArrayList<String>(userDeckSize);
+	
+	// cities colours
+	private static String[] blueCities;
+	private static String[] yellowCities;
+	private static String[] redCities;
+	private static String[] blackCities;
+	
+	// Disease spread meter
+	private static int blueCubesLeft = 24;
+	private static int yellowCubesLeft = 24;
+	private static int redCubesLeft = 24;
+	private static int blackCubesLeft = 24;
+	
+	// Cure diseases and research stations
+	private static ArrayList<String> researchStations = new ArrayList<String>(6);
+	private static boolean blueDiseaseCure = false;
+	private static boolean yellowDiseaseCure = false;
+	private static boolean redDiseaseCure = false;
+	private static boolean blackDiseaseCure = false;
+	private static int maxStations = 6;
+	//private static int curesDiscovered = 0;
+	
+	// Outbreak meter
+	private static int outbreaks = 0;
+	private static int outbreaksMax = 8;
 
 	//##Change this to your path.##
 	private static final String cityMapFileName= "./data/fullMap.txt";
+	
+	// Players configs
 	private static final int NUMBER_USERS = 2;
-	private static final String[] userNames = {"User","Agent"};
-
-
+	private static final String[] userNames = {"Human","The Machine"};
+	
+	// Player turn
+	private static int turnsLeft = 4;
+	private static int handLimit = 7;
+	private int numberCardsDraw = 2;
+	private static int currentUser = 0;
+	private static ArrayList<String> userOneHand = new ArrayList<String>(handLimit);
+	private static ArrayList<String> userTwoHand = new ArrayList<String>(handLimit);;
+	
 	//The constants for the commands.
 	private static final int QUIT = 0;
 	private static final int PRINT_LOCATION = 1;
@@ -46,16 +96,32 @@ public class Simulation {
 	private static final int PRINT_ADJACENT_CITIES = 6;
 	private static final int PRINT_DISEASES = 7;
 	private static final int REMOVE = 8;
+	private static final int TRADE_CARD = 9;
+	private static final int PASS = 10;
+	private static final int CURE_DISEASE = 11;
+	private static final int BUILD_RESEARCH = 12;
+	private static final int DIRECT_MOVE = 13;
+	private static final int CHARTER_MOVE = 14;
+	private static final int SHUTTLE_MOVE = 15;
+	private static final int PRINT_STATIONS = 16;
+	private static final int PRINT_HANDS = 17;
+	private static final int COMMUNICATE  = 18;
 	
 	
 	/***Functions for user commands***/
 	//Get the users input and translate it to the constants.  Could do lots more 
 	//error handling here.
 	private static int processUserInput(String inputString) {
+		inputString = inputString.toLowerCase().split(" ")[0];
 		if (inputString.compareTo("quit") == 0)
 			return QUIT;
 		else if (inputString.compareTo("location") == 0)
 			return PRINT_LOCATION;
+		else if (inputString.compareTo("move") == 0)
+			return MOVE;
+		else if ((inputString.compareTo("actions") == 0) ||
+				 (inputString.compareTo("help") == 0))
+			return PRINT_ACTIONS;
 		else if (inputString.compareTo("cities") == 0)
 			return PRINT_CITIES;
 		else if (inputString.compareTo("connections") == 0)
@@ -64,15 +130,41 @@ public class Simulation {
 			return PRINT_ADJACENT_CITIES;
 		else if (inputString.compareTo("infections") == 0)
 			return PRINT_DISEASES;
-		else if (inputString.compareTo("move") == 0)
-			return MOVE;
 		else if (inputString.compareTo("remove") == 0)
 			return REMOVE;
-		else if ((inputString.compareTo("actions") == 0) ||
-				 (inputString.compareTo("help") == 0))
-			return PRINT_ACTIONS;
+		else if (inputString.compareTo("trade") == 0)
+			return TRADE_CARD;
+		else if (inputString.compareTo("pass") == 0)
+			return PASS;
+		else if (inputString.compareTo("cure") == 0)
+			return CURE_DISEASE;
+		else if (inputString.compareTo("research") == 0)
+			return BUILD_RESEARCH;
+		else if (inputString.compareTo("direct") == 0)
+			return DIRECT_MOVE;
+		else if (inputString.compareTo("charter") == 0)
+			return CHARTER_MOVE;
+		else if (inputString.compareTo("shuttle") == 0)
+			return SHUTTLE_MOVE;
+		else if (inputString.compareTo("stations") == 0)
+			return PRINT_STATIONS;
+		else if (inputString.compareTo("hands") == 0)
+			return PRINT_HANDS;
+		else if (inputString.compareTo("communicate") == 0)
+			return PRINT_STATIONS;
 		else 
 			return -1;
+	}
+	
+	private static void printStations() {
+		System.out.printf("Research Stations: %s\n", researchStations.size());
+		for (String station:researchStations) {
+			System.out.println(station);
+		}
+	}
+	
+	private static void communicate() {
+		System.out.println("Agent go brr");
 	}
 	
 	//Make sure the scanner is open, then get the user input and make sure it's reasonable.
@@ -83,12 +175,18 @@ public class Simulation {
 
 		//Open up the scanner if it's not already open.
 		if (!shellOpen) {
-			shellInput = new Scanner(System. in);
-			shellOpen = true;
-			//todo, add error checking.
+			try {
+				shellInput = new Scanner(System. in);
+				shellOpen = true;
+			}
+			catch(Exception e) {
+				System.out.printf("Error reading user input: %s", e);
+				e.printStackTrace();
+			}
 		}
 		//loop until the user types in a command that is named.  It may not be a valid move.
 		while (!gotReasonableInput) {
+			System.out.printf("[%s]: ", userNames[currentUser]);
 			String userInput = shellInput.nextLine();
 			System.out.println("The user typed:"+ userInput);
 			//Translate the user's input to an integer.
@@ -120,13 +218,23 @@ public class Simulation {
 		System.out.println ("Type in on the terminal with the following followed by no spaces finish with return.");
 		System.out.println ("quit");
 		System.out.println ("location");
+		System.out.println ("move");
+		System.out.println ("actions/help");
 		System.out.println ("cities");
 		System.out.println ("connections");
 		System.out.println ("adjacent");
 		System.out.println ("infections");
-		System.out.println ("move");
-		System.out.println ("remove");		
-		System.out.println ("actions");
+		System.out.println ("remove");
+		System.out.println("trade");
+		System.out.println("pass");
+		System.out.println("cure");
+		System.out.println("research");
+		System.out.println("direct");
+		System.out.println("shuttle");
+		System.out.println("charter");
+		System.out.println("stations");
+		System.out.println("hands");
+		System.out.println("communicate");
 	}
 
 	//Print out all the users' locations.
@@ -138,6 +246,65 @@ public class Simulation {
 			System.out.println (userNames[userNumber] + " is in " + cities[printUserLocation]);
 		}
 	}
+		
+	private static boolean tradeCard() {
+		if (userLocation[0] == userLocation[1]) {
+			printHands();
+			System.out.println("Choose user one card to trade");
+			System.out.println("Machine's consent not apply, for now...");
+			String userInput;
+			userInput = shellInput.nextLine().toLowerCase();
+			for (String cardOne:userOneHand) {
+				if (userInput.compareTo(cardOne.toLowerCase()) == 0){
+					System.out.println("Choose user two card to trade");
+					printHands();
+					userInput = shellInput.nextLine().toLowerCase();
+					for (String cardTwo:userTwoHand) {
+						if (userInput.compareTo(cardTwo.toLowerCase()) == 0) {
+							userOneHand.remove(cardOne);
+							userOneHand.add(cardTwo);
+							userTwoHand.remove(cardTwo);
+							userTwoHand.add(cardOne);
+							System.out.println("Traded user one "+cardOne+"for user two"+cardTwo);
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean cureDisease() {
+		return true;
+	}
+	
+	private static boolean buildResearch() {
+		return true;
+	}
+	
+	private static boolean directMove() {
+		return true;
+	}
+	
+	private static boolean charterMove() {
+		return true;
+	}
+	
+	private static boolean shuttleMove() {
+		return true;
+	}
+	
+	private static void printHands() {
+		System.out.println("User one hand:");
+		for(String card:userOneHand) {
+			System.out.println(card);
+		}
+		System.out.println("User two hand:");
+		for(String card:userTwoHand) {
+			System.out.println(card);
+		}
+	}
 	
 	//Handle the user's commands.
 	private static boolean processUserCommand(int userInput) {
@@ -147,6 +314,11 @@ public class Simulation {
 			return true;
 		else if (userInput == PRINT_LOCATION)
 			printUserLocations();
+		else if (userInput == MOVE) {
+			moveUser();
+			actionDone();
+		} else if (userInput == PRINT_ACTIONS)
+			printActions();
 		else if (userInput == PRINT_CITIES)
 			printCities();
 		else if (userInput == PRINT_CONNECTIONS)
@@ -155,15 +327,29 @@ public class Simulation {
 			printAdjacentCities();
 		else if (userInput == PRINT_DISEASES)
 			printInfectedCities();
-		else if (userInput == PRINT_ACTIONS)
-			printActions();
-		else if (userInput == MOVE) {
-			moveUser();
-			actionDone();
-		}
 		else if (userInput == REMOVE) {
 			if (removeCube()) actionDone();
+		} else if (userInput == TRADE_CARD) {
+			if (tradeCard()) actionDone();
+		} else if (userInput == PASS)
+			actionDone();
+		else if (userInput == CURE_DISEASE) {
+			if (cureDisease()) actionDone();
+		} else if (userInput == BUILD_RESEARCH) {
+			if (buildResearch()) actionDone();
+		} else if (userInput == DIRECT_MOVE) {
+			if (directMove()) actionDone();
+		} else if (userInput == CHARTER_MOVE) {
+			if (charterMove()) actionDone();
+		} else if (userInput == SHUTTLE_MOVE) {
+			if (shuttleMove()) actionDone();
 		}
+		else if (userInput == PRINT_STATIONS)
+			printStations();
+		else if (userInput == PRINT_HANDS)
+			printHands();
+		else if (userInput == COMMUNICATE)
+			communicate();
 		return false;
 	}
 	
@@ -197,12 +383,45 @@ public class Simulation {
 		
 	}
 	
+	private static boolean isDiseaseCured(int currentUserLocation) {
+		String userCity = cities[currentUserLocation];
+		if (blueDiseaseCure) {
+			for (String city:blueCities) {
+				if (userCity == city)
+					return true;
+			}
+		}
+		if (yellowDiseaseCure) {
+			for (String city:yellowCities) {
+				if (userCity == city)
+					return true;
+			}
+		}	
+		if (redDiseaseCure) {
+			for (String city:redCities) {
+				if (userCity == city)
+					return true;
+			}
+		}
+		if (blackDiseaseCure) {
+			for (String city:blackCities) {
+				if (userCity == city)
+					return true;
+			}	
+		}
+		return false;
+	}
+	
 	//Remove a cube from the current location.  If there's not, return false for an error.
 	private static boolean removeCube() {
 		int currentUserLocation = userLocation[currentUser];
 		if (diseaseCubes[currentUserLocation] > 0) 
 			{
-			diseaseCubes[currentUserLocation]--;
+			if (isDiseaseCured(currentUserLocation)) {
+				diseaseCubes[currentUserLocation] = 0;
+			} else {
+				diseaseCubes[currentUserLocation]--;
+			}
 			System.out.println("There are " + diseaseCubes[currentUserLocation] + " left");
 			return true;
 			}
@@ -213,10 +432,14 @@ public class Simulation {
 	}
 	
 	private static void actionDone() {
-		currentUser++;
-		currentUser%=NUMBER_USERS;
-		System.out.println("It's now " + userNames[currentUser] + " turn.");
-		
+		turnsLeft--;
+		System.out.println(userNames[currentUser]+" turns left "+turnsLeft);
+		if (turnsLeft == 0) {
+			currentUser++;
+			currentUser%=NUMBER_USERS;
+			System.out.println("It's now " + userNames[currentUser] + " turn.");
+			turnsLeft = 4;
+		}
 	}
 	
 	/***Code for the city graph ***/
@@ -241,8 +464,9 @@ public class Simulation {
 	//Loop through the city array, and return the offset of the cityName parameter in that
 	//array.  Return -1 if the cityName is not in the array.
 	private static int getCityOffset(String cityName) {
+		cityName = cityName.toLowerCase();
 		for (int cityNumber = 0; cityNumber < numberCities; cityNumber++) {
-			if (cityName.compareTo(cities[cityNumber]) == 0) 
+			if (cityName.compareTo(cities[cityNumber].toLowerCase()) == 0) 
 				return cityNumber;
 		}
 		return -1;
@@ -303,7 +527,7 @@ public class Simulation {
 		      cities = new String[numberCities]; //allocate the cities array
 		      diseaseCubes = new int[numberCities];
 		      
-		      //tead the number of connections and allocate variables.
+		      //read the number of connections and allocate variables.
 		      numberConnections = mapFileReader.nextInt();
 		      data = mapFileReader.nextLine();  //read the rest of the line after the int
 		      connections = new int[2][numberConnections];
@@ -323,12 +547,34 @@ public class Simulation {
 	}
 	
 	//A stub for now just to put some disease cubes on the board.  Do it properly later.
+
 	private static void infectCities() {
-		for (int city = 0; city < numberCities; city ++) {
-			int randNumber = randomGenerator.nextInt(20);
-			if (randNumber  < 4)
-			diseaseCubes[city] = randNumber;
+		// spread 3 infections, 3 cubes, 2 cubes and 1 cube
+		// effecting 3 cities each
+		int nTarget = 0;
+		String target;
+		
+		for (int cubes=3; cubes<=1; cubes--) {
+			for (int wave=0; wave<3; wave++) {
+				// draw from infection deck
+				target = infectionDeck.get(-1);
+				infectionDeck.remove(-1);
+				
+				// look for matching city number to apply infection
+				for (int city=0; city<lenCities; city++) {
+					if (cities[city].compareTo(target) == 0) {
+						nTarget = city;
+					}
+				}
+				
+				// apply according number of cubes
+				diseaseCubes[nTarget] = cubes;
+			}
 		}
+	}
+	
+	private static boolean spreadInfection() {
+		return false;
 	}
 
 	private static void printInfectedCities() {
@@ -339,20 +585,172 @@ public class Simulation {
 		}
 	}
 	
+	private static void initCities() {
+		blueCities = Arrays.copyOfRange(cities,0,11);
+		yellowCities = Arrays.copyOfRange(cities,12,23);
+		redCities = Arrays.copyOfRange(cities,24,35);
+		blackCities = Arrays.copyOfRange(cities,36,47);
+	}
+	
+	private static boolean playerDraw() {
+		return false;
+	}
+	
+	private static boolean checkWin() {
+		if (blueDiseaseCure && yellowDiseaseCure && redDiseaseCure && blackDiseaseCure) {
+			return true;
+		} else {
+			return false;
+		}	
+	}
+	
+	private static boolean checkLoss() {
+		if (blueCubesLeft == 0 || redCubesLeft == 0 || yellowCubesLeft == 0 ||
+				blackCubesLeft == 0) {
+			return true;
+		} else if (outbreaks == outbreaksMax){
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private static boolean playerTurn() {
+		int turnsLeft = 4;
+		int userInput;
+		
+		while (turnsLeft != 0) {
+			userInput = getUserInput();
+			// QUIT returns true else false
+			if (processUserCommand(userInput))
+				return true;
+			turnsLeft--;
+			if (checkWin())
+				return true;
+			if (checkLoss())
+				return true;
+		}
+		if (playerDraw())
+			return true;
+		return false;
+	}
+	
+	private static String[] shuffle(String[] array) {	
+		// rebuilt array in random order
+		for (int i = 0; i < array.length; i++) {
+			int randomIndexToSwap = randomGenerator.nextInt(array.length);
+			String temp = array[randomIndexToSwap];
+			array[randomIndexToSwap] = array[i];
+			array[i] = temp;
+		}
+		return array;
+	}
+	
+	private static void initDeck() {
+		// shuffle player deck
+		String[] citiesShuffled = shuffle(Arrays.copyOfRange(cities,0,lenCities)); 
+		
+		// deal 4 cards to each player
+		for (int card=0; card<4; card++) {
+			userDeckCardsRemoved++;
+			userOneHand.add(citiesShuffled[lenCities-userDeckCardsRemoved]);
+			citiesShuffled = Arrays.copyOfRange(citiesShuffled,0,lenCities-userDeckCardsRemoved);
+		}
+		for (int card=0; card<4; card++) {
+			userDeckCardsRemoved++;
+			userTwoHand.add(citiesShuffled[lenCities-userDeckCardsRemoved]);
+			citiesShuffled = Arrays.copyOfRange(citiesShuffled,0,lenCities-userDeckCardsRemoved);
+		}
+		// remove dealt cards from player deck
+		// -1 for last el as starts from 0 -8 for 2x4 cards
+		userDeckSize = userDeckSize - 8;
+		citiesShuffled = Arrays.copyOfRange(citiesShuffled, 0, userDeckSize-1);
+		
+		// split into 5 piles and add an epidemic card to each
+		String epidemicCard = "Epidemic";
+		// 8 city cards + 1 epidemic card
+		// we copy 1 repeated and replace my epidemic card
+		String[] pileOne = Arrays.copyOfRange(cities,0,9); // 8 + epi
+		String[] pileTwo = Arrays.copyOfRange(cities,8,17); // 8 + epi
+		String[] pileThree = Arrays.copyOfRange(cities,16,25); // 8 + epi
+		String[] pileFour = Arrays.copyOfRange(cities,24,33); // 8 + epi
+		String[] pileFive = Arrays.copyOfRange(cities,31,40); // epi + 8
+		
+		// add epidemic card
+		pileOne[8] = epidemicCard;
+		pileTwo[8] = epidemicCard;
+		pileThree[8] = epidemicCard;
+		pileFour[8] = epidemicCard;
+		pileFive[0] = epidemicCard;
+		
+		// shuffle piles
+		pileOne = shuffle(pileOne);
+		pileTwo = shuffle(pileOne);
+		pileThree = shuffle(pileThree);
+		pileFour = shuffle(pileFour);
+		pileFive = shuffle(pileFour);
+
+		// build player deck back from the 5 piles 
+		for (int pile = 1; pile <= 5; pile++) {
+			if (pile == 1) {
+				for (int card=0; card<9;card++) {
+					userDeck.add(pileOne[card]);
+				}
+			} else if (pile == 2) {
+				for (int card=0; card<9;card++) {
+					userDeck.add(pileTwo[card]);
+				}
+			} else if (pile == 3) {
+				for (int card=0; card<9;card++) {
+					userDeck.add(pileThree[card]);
+				}
+				
+			} else if (pile == 4) {
+				for (int card=0; card<9;card++) {
+					userDeck.add(pileFour[card]);
+				}
+			} else { // pile == 5
+				for (int card=0; card<9;card++) {
+					userDeck.add(pileFive[card]);
+				}
+			}
+		}
+		
+		// shuffle infection deck
+		String[] infectionPile = shuffle(cities);
+		for (int card=0; card<infectionDeckSize; card++) {
+			infectionDeck.add(infectionPile[card]);
+		}
+	}
+	
+	private static void initResearchStations() {
+		researchStations.add("Atlanta");
+	}
+
 	//The main function of the program.  Enter and exit from here.
 	//It is a simple getInput processInput loop until the game is over.  
 	public static void main(String[] args) {
 		boolean gameDone = false;
 
-		System.out.println("Hello Pandemic Tester");
-		readCityGraph();
-		infectCities();
+		System.out.println("Welcome to the Pandemic. Please don't be rational.");
 		
+		readCityGraph();
+		initCities();
+		initResearchStations();
+		initDeck();
+		infectCities();
+
 		while (!gameDone) {
-			int userInput = getUserInput();	
-			gameDone = processUserCommand(userInput);
+			gameDone = playerTurn();
+			
 		}
 		
-		System.out.println("Goodbye Pandemic Tester");
+		if (checkWin()) {
+			System.out.println("'gz u won u nerd, go touch grass now' - (ur mom)");
+		} else if (checkLoss() || playerDraw()){
+			System.out.println("'while u ve been taking L's, i ve been popping shells - (yung innanet)'");
+		} else {
+			System.out.println("quitters dont go far, kid, full send or go home cry");
+		}
 	}
 }
