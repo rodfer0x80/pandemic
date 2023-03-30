@@ -60,10 +60,7 @@ public class Simulation {
 	
 	// Cure diseases and research stations
 	private static ArrayList<String> researchStations = new ArrayList<String>(6);
-	private static boolean blueDiseaseCure = false;
-	private static boolean yellowDiseaseCure = false;
-	private static boolean redDiseaseCure = false;
-	private static boolean blackDiseaseCure = false;
+	private static boolean[] cures = {false, false, false, false};
 	private static int maxStations = 6;
 	//private static int curesDiscovered = 0;
 	
@@ -275,24 +272,227 @@ public class Simulation {
 		return false;
 	}
 	
+	private static int getCityColour(String localCity) {
+		for (String city:blueCities) {
+			if (localCity.compareTo(city) == 0) {
+				return 0;
+			}
+		}
+		for (String city:yellowCities) {
+			if (localCity.compareTo(city) == 0) {
+				return 1;
+			}
+		}
+		for (String city:redCities) {
+			if (localCity.compareTo(city) == 0) {
+				return 2;
+			}
+		}
+		for (String city:blackCities) {
+			if (localCity.compareTo(city) == 0) {
+				return 3;
+			}
+		}
+		return -1;
+	}
+	
+	private static String getCureColour(int cure) {
+		if (cure == 0)
+			return "blue";
+		else if (cure == 1)
+			return "yellow";
+		else if (cure == 2)
+			return "red";
+		else if (cure == 3)
+			return "black";
+		else
+			return "";
+		
+	}
+	
 	private static boolean cureDisease() {
-		return true;
+		String localCity = cities[userLocation[currentUser]];
+		int colour = getCityColour(localCity);
+		int cardCount = 0;
+		ArrayList<String> playerHand = new ArrayList<String>(handLimit);
+		if (currentUser == 0) {
+			playerHand = userOneHand;
+		} else {
+			playerHand = userTwoHand;
+		}
+		ArrayList<Integer> removeCards = new ArrayList<Integer>(5);
+		int nCard = 0;
+		
+		boolean researchStationFlag = false;
+		for (String city:researchStations) {
+			if (city.compareTo(localCity) == 0) {
+				researchStationFlag = true;
+			}
+		}
+		if (!researchStationFlag) {
+			System.out.println("First you need to build a research station in "+localCity);
+			return false;
+		}
+		for(String card:playerHand) {
+			if (getCityColour(card) == colour) {
+				 cardCount++;
+				 removeCards.add(nCard);
+			}
+				nCard++;
+		}
+		if (cardCount == 5) {
+			cures[colour] = true;
+			for(int card:removeCards) {
+				playerHand.remove(card);
+			}
+			System.out.println("Cured "+getCureColour(colour)+ " disease");
+			return true;
+		}
+		System.out.println("User "+userNames[currentUser]+" needs a total of 5 same colour cards to cure a disease in this city");
+		return false;
 	}
 	
 	private static boolean buildResearch() {
-		return true;
+		String localCity = cities[userLocation[currentUser]];
+		ArrayList<String> playerHand = new ArrayList<String>(handLimit);
+		int userInput;
+		if (currentUser == 0) {
+			playerHand = userOneHand;
+		} else {
+			playerHand = userTwoHand;
+		}
+		System.out.println("fk");
+		for (String card:playerHand) {
+			if (localCity.compareTo(card) == 0) {
+				System.out.println("smd");
+				if (researchStations.size() == maxStations) {
+					System.out.println("Limit of research stations reached");
+					System.out.println("Enter number 0-5 to replace reseach station");
+					int i = 0;
+					for(String station:researchStations) {
+						System.out.println(i+" : "+station);
+					}
+					userInput = shellInput.nextInt();
+					researchStations.remove(userInput);
+					researchStations.add(localCity);
+					System.out.println("Research stations build in "+localCity);
+					return true;
+				} else {
+					researchStations.add(localCity);
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	private static boolean directMove() {
-		return true;
+		int userInput;
+		int nCard = 0;
+		String flyCity;
+		ArrayList<String> playerHand = new ArrayList<String>(handLimit);
+		
+		if (currentUser == 0) {
+			playerHand = userOneHand;
+		} else {
+			playerHand = userTwoHand;
+		}
+		
+		System.out.println("Choose a city to direct fly to");
+		for(String card:playerHand) {
+			System.out.println(nCard+" : "+card);
+		}
+		userInput = shellInput.nextInt();
+		flyCity = playerHand.get(userInput);
+		if (flyCity.compareTo("Epidemic") == 0 ) {
+			System.out.println("Invalid option, nice try kid");
+			return false;
+		}
+		boolean cardExistsFlag = false;
+		for (String card:playerHand) {
+			if (flyCity.compareTo(card) == 0) {
+				cardExistsFlag = true;
+			}
+		}
+		if (!cardExistsFlag) {
+			System.out.println("Invalid option, nice try kid");
+		}
+		
+		for (int city=0; city<lenCities;city++) {
+			if (cities[city].compareTo(flyCity) == 0) {
+				playerHand.remove(userInput);
+				if (currentUser == 0) {
+					userOneHand = playerHand;
+				} else {
+					userTwoHand = playerHand;
+				}
+				System.out.println(userNames[currentUser]+" moved from "+userLocation[currentUser]+" to "+cities[city]);
+				userLocation[currentUser] = city;
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private static boolean charterMove() {
+		ArrayList<String> playerHand = new ArrayList<String>(handLimit);
+		String localCity = cities[userLocation[currentUser]];
+		String userInput;
+		int nCard = 0;
+		if (currentUser == 0) {
+			playerHand = userOneHand;
+		} else {
+			playerHand = userTwoHand;
+		}
+		
+		for(String card: playerHand) {
+			if (localCity.compareTo(card) == 0) {
+				for(String city:cities) {
+					System.out.println(city);
+				}
+				System.out.println("Choose city to move to 0-47");
+				userInput = shellInput.nextLine();
+				
+				for(int nCity=0; nCity<lenCities; nCity++) {
+					if (userInput.compareTo(cities[nCity]) == 0) {
+						playerHand.remove(nCard);
+						if (currentUser == 0) {
+							userOneHand = playerHand;
+						} else {
+							userTwoHand = playerHand;
+						}
+						System.out.println(userNames[currentUser]+" moved from "+cities[userLocation[currentUser]]+" to "+cities[nCity]);
+						userLocation[currentUser] = nCity;
+					}
+				}
+			nCard++;
+			}
+			return false;
+		}
 		return true;
 	}
 	
 	private static boolean shuttleMove() {
-		return true;
+		String userInput = null;
+		if (researchStations.size() > 1) {
+			for(String station:researchStations) {
+				System.out.println(station);
+			}
+			System.out.println("Choose city to move to");
+			userInput = shellInput.nextLine();
+		}
+		for(String station:researchStations) {
+			if (userInput.compareTo(station) == 0) {
+				for (int city=0; city<lenCities; city++) {
+					if (cities[city].compareTo(station) == 0) {
+						System.out.println(userNames[currentUser]+" move from "+userLocation[currentUser]+" to "+station);
+						userLocation[currentUser] = city;
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	private static void printHands() {
@@ -357,6 +557,8 @@ public class Simulation {
 	//Ask the user where to move, get the city, and if valid, move the user's location.
 	private static void moveUser() {
 		boolean moved = false;
+		printAdjacentCities();
+		//printAdjacentCities();
 		while (!moved) {
 			System.out.println ("Type where you'd like to move.");
 			String userInput = shellInput.nextLine();
@@ -385,25 +587,25 @@ public class Simulation {
 	
 	private static boolean isDiseaseCured(int currentUserLocation) {
 		String userCity = cities[currentUserLocation];
-		if (blueDiseaseCure) {
+		if (cures[0]) {
 			for (String city:blueCities) {
 				if (userCity == city)
 					return true;
 			}
 		}
-		if (yellowDiseaseCure) {
+		if (cures[1]) {
 			for (String city:yellowCities) {
 				if (userCity == city)
 					return true;
 			}
 		}	
-		if (redDiseaseCure) {
+		if (cures[2]) {
 			for (String city:redCities) {
 				if (userCity == city)
 					return true;
 			}
 		}
-		if (blackDiseaseCure) {
+		if (cures[3]) {
 			for (String city:blackCities) {
 				if (userCity == city)
 					return true;
@@ -597,7 +799,7 @@ public class Simulation {
 	}
 	
 	private static boolean checkWin() {
-		if (blueDiseaseCure && yellowDiseaseCure && redDiseaseCure && blackDiseaseCure) {
+		if (cures[0] && cures[1] && cures[2] && cures[3]) {
 			return true;
 		} else {
 			return false;
@@ -637,18 +839,17 @@ public class Simulation {
 	
 	private static String[] shuffle(String[] array) {	
 		// rebuilt array in random order
+		String[] newArray = new String[array.length];
 		for (int i = 0; i < array.length; i++) {
 			int randomIndexToSwap = randomGenerator.nextInt(array.length);
-			String temp = array[randomIndexToSwap];
-			array[randomIndexToSwap] = array[i];
-			array[i] = temp;
+			newArray[i] = array[randomIndexToSwap];
 		}
-		return array;
+		return newArray;
 	}
 	
 	private static void initDeck() {
 		// shuffle player deck
-		String[] citiesShuffled = shuffle(Arrays.copyOfRange(cities,0,lenCities)); 
+		String[] citiesShuffled = shuffle(cities); 
 		
 		// deal 4 cards to each player
 		for (int card=0; card<4; card++) {
