@@ -33,6 +33,14 @@ public class Simulation {
 	private static int lenCities = 48;
 	private static ArrayList<String> infectedCities = new ArrayList<String>(lenCities);;
 	private static int[] diseaseCubes; //Number of disease cubes in the associated city.
+	private static ArrayList<String> blueDisease = new ArrayList<String>(lenCities/4);
+	private static ArrayList<String> yellowDisease = new ArrayList<String>(lenCities/4);
+	private static ArrayList<String> redDisease = new ArrayList<String>(lenCities/4);
+	private static ArrayList<String> blackDisease = new ArrayList<String>(lenCities/4);
+	private static ArrayList<Integer> blueDiseaseCubes = new ArrayList<Integer>(lenCities/4);
+	private static ArrayList<Integer> yellowDiseaseCubes = new ArrayList<Integer>(lenCities/4);;
+	private static ArrayList<Integer> redDiseaseCubes = new ArrayList<Integer>(lenCities/4);;
+	private static ArrayList<Integer> blackDiseaseCubes = new ArrayList<Integer>(lenCities/4);;
 	private static  int[][] connections; //The connections via offset in the cities array.
 	private static int[] userLocation = {0,0};  //These are the users' location that can change.
 	
@@ -42,6 +50,7 @@ public class Simulation {
 	private static int infectionDeckSize = 48;
 	private static int userDeckCardsRemoved = 0;
 	private static int discardDeckSize = 0;
+	private static int infectionDeckRemoved = 0;
 	private static ArrayList<String> userDeck = new ArrayList<String>(userDeckSize);
 	private static ArrayList<String> infectionDeck = new ArrayList<String>(infectionDeckSize);
 	private static ArrayList<String> discardDeck = new ArrayList<String>(userDeckSize);
@@ -78,7 +87,7 @@ public class Simulation {
 	// Player turn
 	private static int turnsLeft = 4;
 	private static int handLimit = 7;
-	private int numberCardsDraw = 2;
+	private static int numberCardsDraw = 2;
 	private static int currentUser = 0;
 	private static ArrayList<String> userOneHand = new ArrayList<String>(handLimit);
 	private static ArrayList<String> userTwoHand = new ArrayList<String>(handLimit);;
@@ -102,7 +111,8 @@ public class Simulation {
 	private static final int SHUTTLE_MOVE = 15;
 	private static final int PRINT_STATIONS = 16;
 	private static final int PRINT_HANDS = 17;
-	private static final int COMMUNICATE  = 18;
+	private static final int PRINT_COLOUR = 18;
+	private static final int COMMUNICATE  = 19;
 	
 	
 	/***Functions for user commands***/
@@ -147,8 +157,10 @@ public class Simulation {
 			return PRINT_STATIONS;
 		else if (inputString.compareTo("hands") == 0)
 			return PRINT_HANDS;
+		else if (inputString.compareTo("colour") == 0)
+			return PRINT_COLOUR;
 		else if (inputString.compareTo("communicate") == 0)
-			return PRINT_STATIONS;
+			return COMMUNICATE;
 		else 
 			return -1;
 	}
@@ -231,6 +243,7 @@ public class Simulation {
 		System.out.println("charter");
 		System.out.println("stations");
 		System.out.println("hands");
+		System.out.println("colour");
 		System.out.println("communicate");
 	}
 
@@ -361,10 +374,8 @@ public class Simulation {
 		} else {
 			playerHand = userTwoHand;
 		}
-		System.out.println("fk");
 		for (String card:playerHand) {
 			if (localCity.compareTo(card) == 0) {
-				System.out.println("smd");
 				if (researchStations.size() == maxStations) {
 					System.out.println("Limit of research stations reached");
 					System.out.println("Enter number 0-5 to replace reseach station");
@@ -405,7 +416,7 @@ public class Simulation {
 		userInput = shellInput.nextInt();
 		flyCity = playerHand.get(userInput);
 		if (flyCity.compareTo("Epidemic") == 0 ) {
-			System.out.println("Invalid option, nice try kid");
+			System.out.println("Invalid option");
 			return false;
 		}
 		boolean cardExistsFlag = false;
@@ -415,7 +426,7 @@ public class Simulation {
 			}
 		}
 		if (!cardExistsFlag) {
-			System.out.println("Invalid option, nice try kid");
+			System.out.println("Invalid option");
 		}
 		
 		for (int city=0; city<lenCities;city++) {
@@ -548,9 +559,35 @@ public class Simulation {
 			printStations();
 		else if (userInput == PRINT_HANDS)
 			printHands();
+		else if (userInput == PRINT_COLOUR)
+			printColour();
 		else if (userInput == COMMUNICATE)
 			communicate();
 		return false;
+	}
+	
+	private static void printColour() {
+		String city = cities[userLocation[currentUser]];
+		for(String blueCity:blueCities) {
+			if (city.compareTo(blueCity) == 0) {
+				System.out.println(city+" has colour blue");
+			}
+		}
+		for(String yellowCity:yellowCities) {
+			if (city.compareTo(yellowCity) == 0) {
+				System.out.println(city+" has colour yellow");
+			}
+		}
+		for(String redCity:redCities) {
+			if (city.compareTo(redCity) == 0) {
+				System.out.println(city+" has colour red");
+			}
+		}
+		for(String blackCity:blackCities) {
+			if (city.compareTo(blackCity) == 0) {
+				System.out.println(city+" has colour black");
+			}
+		}
 	}
 	
 	/*** Action Functions ***/
@@ -636,12 +673,6 @@ public class Simulation {
 	private static void actionDone() {
 		turnsLeft--;
 		System.out.println(userNames[currentUser]+" turns left "+turnsLeft);
-		if (turnsLeft == 0) {
-			currentUser++;
-			currentUser%=NUMBER_USERS;
-			System.out.println("It's now " + userNames[currentUser] + " turn.");
-			turnsLeft = 4;
-		}
 	}
 	
 	/***Code for the city graph ***/
@@ -748,34 +779,104 @@ public class Simulation {
 		    }
 	}
 	
+	private static int getColour(String city) {
+		for(String blueCity:blueCities) {
+			if (city.compareTo(blueCity) == 0) {
+				return 0;
+			}
+		}
+		for(String yellowCity:yellowCities) {
+			if (city.compareTo(yellowCity) == 0) {
+				return 1;
+			}
+		}
+		for(String redCity:redCities) {
+			if (city.compareTo(redCity) == 0) {
+				return 2;
+			}
+		}
+		for(String blackCity:blackCities) {
+			if (city.compareTo(blackCity) == 0) {
+				return 3;
+			}
+		}
+		return -1;
+	}
+	
 	//A stub for now just to put some disease cubes on the board.  Do it properly later.
 
 	private static void infectCities() {
 		// spread 3 infections, 3 cubes, 2 cubes and 1 cube
 		// effecting 3 cities each
-		int nTarget = 0;
+		int targetColour = 0;
 		String target;
 		
-		for (int cubes=3; cubes<=1; cubes--) {
+		for (int cubes=3; cubes>0; cubes--) {
 			for (int wave=0; wave<3; wave++) {
 				// draw from infection deck
-				target = infectionDeck.get(-1);
-				infectionDeck.remove(-1);
-				
-				// look for matching city number to apply infection
-				for (int city=0; city<lenCities; city++) {
-					if (cities[city].compareTo(target) == 0) {
-						nTarget = city;
-					}
+				infectionDeckRemoved++;
+				target = infectionDeck.get(infectionDeckSize-infectionDeckRemoved);
+				//infectionDeck.remove(infectionDeckSize-infectionDeckRemoved);
+				targetColour = getColour(target);
+				if (targetColour == 0) {
+					blueCubesLeft = blueCubesLeft - cubes;
+					blueDisease.add(target);
+					blueDiseaseCubes.add(cubes);
+				} else if (targetColour == 1) {
+					yellowCubesLeft = yellowCubesLeft - cubes;
+					yellowDisease.add(target);
+					yellowDiseaseCubes.add(cubes);
+				}else if (targetColour == 2) {
+					redCubesLeft = redCubesLeft - cubes;
+					redDisease.add(target);
+					redDiseaseCubes.add(cubes);
+				} else {
+					blackCubesLeft = blackCubesLeft - cubes;
+					blackDisease.add(target);
+					blackDiseaseCubes.add(cubes);
 				}
-				
-				// apply according number of cubes
-				diseaseCubes[nTarget] = cubes;
 			}
 		}
 	}
 	
+	
 	private static boolean spreadInfection() {
+		outbreaks++;
+		infectionDeckRemoved = 1;
+		int cubes = 3;
+		String target;
+		int targetColour;
+		int i = 0;
+		for (int wave=0; wave<3; wave++) {
+			// draw from infection deck
+			infectionDeckRemoved++;
+			target = infectionDeck.get(infectionDeckSize-infectionDeckRemoved);
+			//infectionDeck.remove(infectionDeckSize-infectionDeckRemoved);
+			targetColour = getColour(target);
+			if (targetColour == 0) {
+				for (String infectedCity:blueDisease) {
+					if (target.compareTo(infectedCity) == 0) {
+						if (blueDiseaseCubes.get(i)+cubes > 4) {
+							blueDiseaseCubes[i] = 4;
+						}
+					}
+					i++;
+				}
+			} else if (targetColour == 1) {
+				yellowCubesLeft = yellowCubesLeft - cubes;
+				yellowDisease.add(target);
+				yellowDiseaseCubes.add(cubes);
+			}else if (targetColour == 2) {
+				redCubesLeft = redCubesLeft - cubes;
+				redDisease.add(target);
+				redDiseaseCubes.add(cubes);
+			} else {
+				blackCubesLeft = blackCubesLeft - cubes;
+				blackDisease.add(target);
+				blackDiseaseCubes.add(cubes);
+			}
+		}
+		
 		return false;
 	}
 
@@ -788,13 +889,58 @@ public class Simulation {
 	}
 	
 	private static void initCities() {
-		blueCities = Arrays.copyOfRange(cities,0,11);
-		yellowCities = Arrays.copyOfRange(cities,12,23);
-		redCities = Arrays.copyOfRange(cities,24,35);
-		blackCities = Arrays.copyOfRange(cities,36,47);
+		blueCities = Arrays.copyOfRange(cities,0,12);
+		yellowCities = Arrays.copyOfRange(cities,12,24);
+		redCities = Arrays.copyOfRange(cities,24,36);
+		blackCities = Arrays.copyOfRange(cities,36,48);
 	}
 	
 	private static boolean playerDraw() {
+		ArrayList<String> playerHand = new ArrayList<String>(handLimit);
+		String userInput = null;
+		if (currentUser == 0) {
+			playerHand = userOneHand;
+		} else {
+			playerHand = userTwoHand;
+		}
+		for(int nCards=0;nCards<numberCardsDraw;nCards++) {
+			if (playerHand.size() == 7) {
+				System.out.println("Choose a card to discard");
+				for (String card:playerHand) {
+					System.out.println(card);
+				}	
+				userInput = shellInput.nextLine();
+				
+				if (userInput.compareTo("Epidemic") == 0) {
+					System.out.println("invalid");
+					return false;
+				} 
+				for (int card=0; card<playerHand.size();card++) {
+					if(userInput.compareTo(playerHand.get(card)) == 0){
+						playerHand.remove(card);
+					}
+				}
+			}
+
+			if (userDeckSize > 0) {
+				if (userDeck.get(lenCities-userDeckCardsRemoved).compareTo("Epidemic") == 0) {
+					 spreadInfection();
+				} else {
+					playerHand.add(userDeck.get(lenCities-userDeckCardsRemoved)); 
+				}
+				userDeck.remove(lenCities-userDeckCardsRemoved);
+				userDeckSize--;
+				userDeckCardsRemoved++;
+			} 
+		}
+		for(String card:playerHand) {
+			System.out.println(card);
+		}
+		if (currentUser == 0) {
+			userOneHand = playerHand;
+		} else {
+			userTwoHand = playerHand;
+		}
 		return false;
 	}
 	
@@ -812,28 +958,35 @@ public class Simulation {
 			return true;
 		} else if (outbreaks == outbreaksMax){
 			return true;
+		} else if (userDeckSize < 1) {
+			return true;
 		} else {
 			return false;
 		}
 	}
 	
 	private static boolean playerTurn() {
-		int turnsLeft = 4;
+		turnsLeft = 4;
 		int userInput;
 		
-		while (turnsLeft != 0) {
+		System.out.println("It's now " + userNames[currentUser] + " turn.");
+		
+		while (turnsLeft > 0) {
 			userInput = getUserInput();
 			// QUIT returns true else false
 			if (processUserCommand(userInput))
 				return true;
-			turnsLeft--;
 			if (checkWin())
 				return true;
 			if (checkLoss())
 				return true;
 		}
-		if (playerDraw())
-			return true;
+		playerDraw();
+		checkWin();
+		checkLoss();
+		
+		currentUser++;
+		currentUser%=NUMBER_USERS;
 		return false;
 	}
 	
@@ -850,21 +1003,25 @@ public class Simulation {
 	private static void initDeck() {
 		// shuffle player deck
 		String[] citiesShuffled = shuffle(cities); 
-		
+		String[] infectionCities = shuffle(cities);
+		for (String card:infectionCities) {
+			infectionDeck.add(card);
+		}
 		// deal 4 cards to each player
 		for (int card=0; card<4; card++) {
+			userDeckSize--;
 			userDeckCardsRemoved++;
 			userOneHand.add(citiesShuffled[lenCities-userDeckCardsRemoved]);
 			citiesShuffled = Arrays.copyOfRange(citiesShuffled,0,lenCities-userDeckCardsRemoved);
 		}
 		for (int card=0; card<4; card++) {
+			userDeckSize--;
 			userDeckCardsRemoved++;
 			userTwoHand.add(citiesShuffled[lenCities-userDeckCardsRemoved]);
 			citiesShuffled = Arrays.copyOfRange(citiesShuffled,0,lenCities-userDeckCardsRemoved);
 		}
 		// remove dealt cards from player deck
 		// -1 for last el as starts from 0 -8 for 2x4 cards
-		userDeckSize = userDeckSize - 8;
 		citiesShuffled = Arrays.copyOfRange(citiesShuffled, 0, userDeckSize-1);
 		
 		// split into 5 piles and add an epidemic card to each
@@ -933,7 +1090,7 @@ public class Simulation {
 	public static void main(String[] args) {
 		boolean gameDone = false;
 
-		System.out.println("Welcome to the Pandemic. Please don't be rational.");
+		System.out.println("Welcome to the Pandemic.");
 		
 		readCityGraph();
 		initCities();
@@ -947,11 +1104,11 @@ public class Simulation {
 		}
 		
 		if (checkWin()) {
-			System.out.println("'gz u won u nerd, go touch grass now' - (ur mom)");
+			System.out.println("victory");
 		} else if (checkLoss() || playerDraw()){
-			System.out.println("'while u ve been taking L's, i ve been popping shells - (yung innanet)'");
+			System.out.println("defeat");
 		} else {
-			System.out.println("quitters dont go far, kid, full send or go home cry");
+			System.out.println("graceful exit");
 		}
 	}
 }
