@@ -847,33 +847,85 @@ public class Simulation {
 		String target;
 		int targetColour;
 		int i = 0;
+		String tempDisease;
+		int tempCube;
+		int diff;
+		
 		for (int wave=0; wave<3; wave++) {
 			// draw from infection deck
 			infectionDeckRemoved++;
 			target = infectionDeck.get(infectionDeckSize-infectionDeckRemoved);
 			//infectionDeck.remove(infectionDeckSize-infectionDeckRemoved);
 			targetColour = getColour(target);
+			i=0;
 			if (targetColour == 0) {
 				for (String infectedCity:blueDisease) {
 					if (target.compareTo(infectedCity) == 0) {
 						if (blueDiseaseCubes.get(i)+cubes > 4) {
-							blueDiseaseCubes[i] = 4;
+							tempCube = blueDiseaseCubes.get(i);
+							tempDisease = blueDisease.get(i);
+							diff = 4-tempCube;
+							blueCubesLeft+=diff;
+							blueDisease.remove(i);
+							blueDiseaseCubes.remove(i);
+							blueDisease.add(tempDisease);
+							blueDiseaseCubes.add(4);
+							spreadInfection();
 						}
 					}
 					i++;
 				}
 			} else if (targetColour == 1) {
-				yellowCubesLeft = yellowCubesLeft - cubes;
-				yellowDisease.add(target);
-				yellowDiseaseCubes.add(cubes);
+				for (String infectedCity:yellowDisease) {
+					if (target.compareTo(infectedCity) == 0) {
+						if (yellowDiseaseCubes.get(i)+cubes > 4) {
+							tempCube = yellowDiseaseCubes.get(i);
+							tempDisease = yellowDisease.get(i);
+							diff = 4-tempCube;
+							yellowCubesLeft+=diff;
+							yellowDisease.remove(i);
+							yellowDiseaseCubes.remove(i);
+							yellowDisease.add(tempDisease);
+							yellowDiseaseCubes.add(4);
+							spreadInfection();
+						}
+					}
+					i++;
+				}
 			}else if (targetColour == 2) {
-				redCubesLeft = redCubesLeft - cubes;
-				redDisease.add(target);
-				redDiseaseCubes.add(cubes);
+				for (String infectedCity:blueDisease) {
+					if (target.compareTo(infectedCity) == 0) {
+						if (redDiseaseCubes.get(i)+cubes > 4) {
+							tempCube = redDiseaseCubes.get(i);
+							tempDisease = redDisease.get(i);
+							diff = 4-tempCube;
+							redCubesLeft+=diff;
+							redDisease.remove(i);
+							redDiseaseCubes.remove(i);
+							redDisease.add(tempDisease);
+							redDiseaseCubes.add(4);
+							spreadInfection();
+						}
+					}
+					i++;
+				}
 			} else {
-				blackCubesLeft = blackCubesLeft - cubes;
-				blackDisease.add(target);
-				blackDiseaseCubes.add(cubes);
+				for (String infectedCity:blackDisease) {
+					if (target.compareTo(infectedCity) == 0) {
+						if (blackDiseaseCubes.get(i)+cubes > 4) {
+							tempCube = blackDiseaseCubes.get(i);
+							tempDisease = blackDisease.get(i);
+							diff = 4-tempCube;
+							blackCubesLeft+=diff;
+							blackDisease.remove(i);
+							blackDiseaseCubes.remove(i);
+							blackDisease.add(tempDisease);
+							blackDiseaseCubes.add(4);
+							spreadInfection();
+						}
+					}
+					i++;
+				}
 			}
 		}
 		
