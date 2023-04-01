@@ -31,7 +31,7 @@ public class Simulation {
 	private static int numberConnections = -1;	
 	private static String[] cities; //Cities
 	private static int lenCities = 48;
-	private static ArrayList<String> infectedCities = new ArrayList<String>(lenCities);;
+	//private static ArrayList<String> infectedCities = new ArrayList<String>(lenCities);;
 	private static int[] diseaseCubes; //Number of disease cubes in the associated city.
 	private static ArrayList<String> blueDisease = new ArrayList<String>(lenCities);
 	private static ArrayList<String> yellowDisease = new ArrayList<String>(lenCities);
