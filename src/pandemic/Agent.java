@@ -13,7 +13,94 @@ import java.util.List;
 import java.util.Random;
 
 
-public class Node {
+class GameState {
+    private int currentPlayer;
+    private List<PlayerCard> playerDeck;
+    private List<PlayerCard> playerDiscardPile;
+    private List<InfectionCard> infectionDeck;
+    private List<InfectionCard> infectionDiscardPile;
+    private List<City> cities;
+    private List<Disease> diseases;
+    private int outbreakCount;
+    private int infectionRate;
+    private boolean gameEnded;
+
+    public GameState(int currentPlayer, List<PlayerCard> playerDeck, List<PlayerCard> playerDiscardPile,
+                     List<InfectionCard> infectionDeck, List<InfectionCard> infectionDiscardPile,
+                     List<City> cities, List<Disease> diseases, int outbreakCount, int infectionRate,
+                     boolean gameEnded) {
+        this.currentPlayer = currentPlayer;
+        this.playerDeck = playerDeck;
+        this.playerDiscardPile = playerDiscardPile;
+        this.infectionDeck = infectionDeck;
+        this.infectionDiscardPile = infectionDiscardPile;
+        this.cities = cities;
+        this.diseases = diseases;
+        this.outbreakCount = outbreakCount;
+        this.infectionRate = infectionRate;
+        this.gameEnded = gameEnded;
+    }
+
+    public int getCurrentPlayer() {
+        return currentPlayer;
+    }
+
+    public List<PlayerCard> getPlayerDeck() {
+        return playerDeck;
+    }
+
+    public List<PlayerCard> getPlayerDiscardPile() {
+        return playerDiscardPile;
+    }
+
+    public List<InfectionCard> getInfectionDeck() {
+        return infectionDeck;
+    }
+
+    public List<InfectionCard> getInfectionDiscardPile() {
+        return infectionDiscardPile;
+    }
+
+    public List<City> getCities() {
+        return cities;
+    }
+
+    public List<Disease> getDiseases() {
+        return diseases;
+    }
+
+    public int getOutbreakCount() {
+        return outbreakCount;
+    }
+
+    public int getInfectionRate() {
+        return infectionRate;
+    }
+
+    public boolean isGameEnded() {
+        return gameEnded;
+    }
+
+    public boolean isGameOver() {
+        return outbreakCount >= 8 || playerDeck.isEmpty() || infectionDeck.isEmpty() || gameEnded;
+    }
+
+    public List<City> getLegalMoves() {
+        List<City> legalMoves = new ArrayList<>();
+        for (City city : cities) {
+            if (city.isResearchStation() && city.getCubesLeft() > 0) {
+                legalMoves.add(city);
+            }
+        }
+        Collections.shuffle(legalMoves);
+        return legalMoves;
+    }
+
+    // Other methods for updating the game state
+}
+
+
+class Node {
     private static final double EXPLORATION_FACTOR = 1.0 / Math.sqrt(2);
 
     private final GameState state;
