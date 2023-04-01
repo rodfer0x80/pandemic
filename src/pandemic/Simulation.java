@@ -850,18 +850,133 @@ public class Simulation {
 		return -1;
 	}
 	
-	private static void epidemic(String epidemicCity) {
+	private static boolean epidemic(String epidemicCity) {
+		System.out.println("Epidemic outbreak is spreading");
+		outbreaks++;
 		int nEpidemicCity = findCity(epidemicCity);
+		int colour = getColour(epidemicCity);
+		int cubes = 0;
 		for (int nCity=0;nCity<lenCities;nCity++) {
 			if (citiesAdjacent(nEpidemicCity, nCity)) {
 				// find cities[nCity] in each disease array and increase cubes by 1
 				// now sleep sleep
+				if (colour == 0) {
+					for (int i=0;i<blueDisease.size();i++) {
+						if (cities[nCity].compareTo(blueDisease.get(i)) == 0) {
+							blueDisease.remove(i);
+							blueDisease.add(cities[nCity]);
+							cubes = blueDiseaseCubes.get(i) + 1;
+							if (cubes > 3) {
+								cubes = 3;
+								blueCubesLeft--;
+								blueDiseaseCubes.remove(i);
+								blueDiseaseCubes.add(cubes);
+								if (checkLoss())
+									return true;
+								epidemic(cities[nCity]);
+							} else {
+								blueCubesLeft--;
+								blueDiseaseCubes.remove(i);
+								blueDiseaseCubes.add(cubes);
+							}
+
+						} else {
+							blueDisease.add(cities[nCity]);
+							blueDiseaseCubes.add(1);
+							blueCubesLeft--;
+						}
+					}
+					cubes = 0;
+				} else if (colour == 1) {
+					for (int i=0;i<yellowDisease.size();i++) {
+						if (cities[nCity].compareTo(yellowDisease.get(i)) == 0) {
+							yellowDisease.remove(i);
+							yellowDisease.add(cities[nCity]);
+							cubes = yellowDiseaseCubes.get(i) + 1;
+							if (cubes > 3) {
+								cubes = 3;
+								yellowCubesLeft--;
+								yellowDiseaseCubes.remove(i);
+								yellowDiseaseCubes.add(cubes);
+								if (checkLoss())
+									return true;
+								epidemic(cities[nCity]);
+							} else {
+								yellowCubesLeft--;
+								yellowDiseaseCubes.remove(i);
+								yellowDiseaseCubes.add(cubes);
+							}
+
+						} else {
+							yellowDisease.add(cities[nCity]);
+							yellowDiseaseCubes.add(1);
+							yellowCubesLeft--;
+						}
+					}
+					cubes = 0;
+				} else if (colour == 2) {
+					for (int i=0;i<redDisease.size();i++) {
+						if (cities[nCity].compareTo(redDisease.get(i)) == 0) {
+							redDisease.remove(i);
+							redDisease.add(cities[nCity]);
+							cubes = redDiseaseCubes.get(i) + 1;
+							if (cubes > 3) {
+								cubes = 3;
+								redCubesLeft--;
+								redDiseaseCubes.remove(i);
+								redDiseaseCubes.add(cubes);
+								if (checkLoss())
+									return true;
+								epidemic(cities[nCity]);
+							} else {
+								redCubesLeft--;
+								redDiseaseCubes.remove(i);
+								redDiseaseCubes.add(cubes);
+							}
+
+						} else {
+							redDisease.add(cities[nCity]);
+							redDiseaseCubes.add(1);
+							redCubesLeft--;
+						}
+					}
+					cubes = 0;
+				} else if (colour == 3) {
+					for (int i=0;i<blackDisease.size();i++) {
+						if (cities[nCity].compareTo(blackDisease.get(i)) == 0) {
+							blackDisease.remove(i);
+							blackDisease.add(cities[nCity]);
+							cubes = blackDiseaseCubes.get(i) + 1;
+							if (cubes > 3) {
+								cubes = 3;
+								blackCubesLeft--;
+								blackDiseaseCubes.remove(i);
+								blackDiseaseCubes.add(cubes);
+								if (checkLoss())
+									return true;
+								epidemic(cities[nCity]);
+							} else {
+								blackCubesLeft--;
+								blackDiseaseCubes.remove(i);
+								blackDiseaseCubes.add(cubes);
+							}
+
+						} else {
+							blackDisease.add(cities[nCity]);
+							blackDiseaseCubes.add(1);
+							blackCubesLeft--;
+						}
+					}
+					cubes = 0;
+				}
 			}
 		}
+		return false;
 	}
 	
 	
 	private static boolean spreadInfection() {
+		System.out.println("Epidemic card drawn");
 		outbreaks++;
 		infectionDeckRemoved = 1;
 		int cubes = 3;
@@ -877,6 +992,7 @@ public class Simulation {
 			// draw from infection deck
 			infectionDeckRemoved++;
 			target = infectionDeck.get(infectionDeckSize-infectionDeckRemoved);
+			infectionDeck.remove(infectionDeckSize-infectionDeckRemoved);
 			//infectionDeck.remove(infectionDeckSize-infectionDeckRemoved);
 			targetColour = getColour(target);
 			i=0;
@@ -888,12 +1004,14 @@ public class Simulation {
 							tempCube = blueDiseaseCubes.get(i);
 							tempDisease = blueDisease.get(i);
 							diff = tempCube-3;
-							blueCubesLeft+=diff;
+							blueCubesLeft-=diff;
 							blueDisease.remove(i);
 							blueDiseaseCubes.remove(i);
 							blueDisease.add(tempDisease);
 							blueDiseaseCubes.add(3);
-							epidemic(blueDisease.get(i));
+							if (epidemic(blueDisease.get(i))) {
+								return true;
+							}
 						}
 					}
 					i++;
@@ -906,12 +1024,14 @@ public class Simulation {
 							tempCube = yellowDiseaseCubes.get(i);
 							tempDisease = yellowDisease.get(i);
 							diff = tempCube-3;
-							yellowCubesLeft+=diff;
+							yellowCubesLeft-=diff;
 							yellowDisease.remove(i);
 							yellowDiseaseCubes.remove(i);
 							yellowDisease.add(tempDisease);
 							yellowDiseaseCubes.add(3);
-							epidemic(yellowDisease.get(i));
+							if (epidemic(yellowDisease.get(i))) {
+								return true;
+							}
 						}
 					}
 					i++;
@@ -924,12 +1044,14 @@ public class Simulation {
 							tempCube = redDiseaseCubes.get(i);
 							tempDisease = redDisease.get(i);
 							diff = tempCube-3;
-							redCubesLeft+=diff;
+							redCubesLeft-=diff;
 							redDisease.remove(i);
 							redDiseaseCubes.remove(i);
 							redDisease.add(tempDisease);
 							redDiseaseCubes.add(3);
-							epidemic(redDisease.get(i));
+							if (epidemic(redDisease.get(i))) {
+								return true;
+							}
 						}
 					}
 					i++;
@@ -942,19 +1064,26 @@ public class Simulation {
 							tempCube = blackDiseaseCubes.get(i);
 							tempDisease = blackDisease.get(i);
 							diff = tempCube-3;
-							blackCubesLeft+=diff;
+							blackCubesLeft-=diff;
 							blackDisease.remove(i);
 							blackDiseaseCubes.remove(i);
 							blackDisease.add(tempDisease);
 							blackDiseaseCubes.add(3);
-							epidemic(blackDisease.get(i));
+							if (epidemic(blackDisease.get(i))) {
+								return true;
+							}
 						}
 					}
 					i++;
 				}
 			}
 		}
-		
+		String[] tempInfectionDeck = shuffle(cities);
+		infectionDeck = new ArrayList<String>(lenCities);
+		for (String city:tempInfectionDeck) {
+			infectionDeck.add(city);
+		}
+		infectionDeckRemoved = 1;
 		return false;
 	}
 
@@ -1023,6 +1152,7 @@ public class Simulation {
 					for (int card=0; card<playerHand.size();card++) {
 						if(userInput.compareTo(playerHand.get(card)) == 0){
 							playerHand.remove(card);
+							cardLimitFlag = false;
 						}
 					}
 				}
@@ -1031,7 +1161,9 @@ public class Simulation {
 
 			if (userDeckSize > 0) {
 				if (userDeck.get(lenCities-userDeckCardsRemoved).compareTo("Epidemic") == 0) {
-					 spreadInfection();
+					 if (spreadInfection()) {
+						 return true;
+					 }
 				} else {
 					playerHand.add(userDeck.get(lenCities-userDeckCardsRemoved)); 
 				}
@@ -1040,9 +1172,7 @@ public class Simulation {
 				userDeckCardsRemoved++;
 			} 
 		}
-		for(String card:playerHand) {
-			System.out.println(card);
-		}
+
 		if (currentUser == 0) {
 			userOneHand = playerHand;
 		} else {
@@ -1060,10 +1190,10 @@ public class Simulation {
 	}
 	
 	private static boolean checkLoss() {
-		if (blueCubesLeft == 0 || redCubesLeft == 0 || yellowCubesLeft == 0 ||
-				blackCubesLeft == 0) {
+		if (blueCubesLeft < 1 || redCubesLeft <1 || yellowCubesLeft <1 ||
+				blackCubesLeft <1) {
 			return true;
-		} else if (outbreaks == outbreaksMax){
+		} else if (outbreaks >= outbreaksMax){
 			return true;
 		} else if (userDeckSize < 1) {
 			return true;
@@ -1088,7 +1218,9 @@ public class Simulation {
 			if (checkLoss())
 				return true;
 		}
-		playerDraw();
+		if (playerDraw()) {
+			return true;
+		}
 		checkWin();
 		checkLoss();
 		
@@ -1212,9 +1344,9 @@ public class Simulation {
 		}
 		
 		if (checkWin()) {
-			System.out.println("victory");
+			System.out.println("Victory");
 		} else if (checkLoss() || playerDraw()){
-			System.out.println("defeat");
+			System.out.println("Defeat");
 		} else {
 			System.out.println("graceful exit");
 		}
