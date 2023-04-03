@@ -1,0 +1,34 @@
+There are 48 user cards drawn 2 at a time by each player.
+When deck reaches 0 you lose.
+Each player has 4 turns per round and can use it to:
+1. remove a cube from current city
+2. move to adjacent city
+3. trade current city card to fly anywhere
+4. trade city card to fly there
+5. move to any city with a research center
+6. trade 5 same colour cards in a same colour city to build 1 of 6 research
+center
+7. communicate with AI agent
+8. check current infected cities and cubes 
+9. check adjacent cities
+10. pass turn
+11. trade card between players
+12. see players hands 
+13. see research stations built
+14. see curent city colour 
+15. trade 5 same colour cards to cure that colour disease in a same colour
+reserch center
+16. help/check actions
+17. check current city 
+18. check cities
+19. quit
+There are 5 epidemic cards, draw one and an epidemic is spread drawing 3 cards
+and spreading 3 cubes of disease through those cities.
+A city with 4 cubes has an outbreak spreading that disease to neaby cities,
+this does stack up.
+If you reach 8 outbreaks you lose.
+If you run out of cubes for a disease (24 available) you lose.
+You can tell your AI agent to do certain moves and it will try its best.
+A research center is always setup in Atlanta when you start, also there
+will be 3 3 cube, 3 2 cube and 3 1 cube cities contamined at start
+Good luck.
