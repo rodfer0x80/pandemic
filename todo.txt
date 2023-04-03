@@ -1,3 +1,0 @@
-text dump game rules and possible outcomes for 6 points
-clean up code for 6+ points
-write report for 8-10 points

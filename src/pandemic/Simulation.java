@@ -712,9 +712,22 @@ public class Simulation {
 	//Print out the list of all the cities.
 	private static void printCities() {
 		System.out.println(numberCities + " Cities.");
-		for (int cityNumber = 0; cityNumber < numberCities; cityNumber++) {
-			System.out.println(cities[cityNumber]);
-		}
+        System.out.println("\nBlue cities");
+		for (int cityNumber = 0; cityNumber < blueCities.length; cityNumber++){
+            System.out.println(blueCities[cityNumber]);
+        }
+        System.out.println("\nYellow cities");
+		for (int cityNumber = 0; cityNumber < yellowCities.length; cityNumber++){
+            System.out.println(yellowCities[cityNumber]);
+        }
+        System.out.println("\nRed cities");
+		for (int cityNumber = 0; cityNumber < redCities.length; cityNumber++){
+            System.out.println(redCities[cityNumber]);
+        }
+        System.out.println("\nBlack cities");
+		for (int cityNumber = 0; cityNumber < blackCities.length; cityNumber++){
+            System.out.println(blackCities[cityNumber]);
+        }
 	}
 	
 	//Loop through the city array, and return the offset of the cityName parameter in that
