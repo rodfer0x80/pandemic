@@ -27,7 +27,9 @@ and spreading 3 cubes of disease through those cities.
 A city with 4 cubes has an outbreak spreading that disease to neaby cities,
 this does stack up.
 If you reach 8 outbreaks you lose.
-If you run out of cubes for a disease (24 available) you lose.
+If you run out of cubes for a disease (24 available) you lose, you also have
+some control over a few selected actions for your AI pet such as draw card,
+we pretend you are just communicating.
 You can tell your AI agent to do certain moves and it will try its best.
 A research center is always setup in Atlanta when you start, also there
 will be 3 3 cube, 3 2 cube and 3 1 cube cities contamined at start
