@@ -1,0 +1,3 @@
+text dump game rules and possible outcomes for 6 points
+make mtcs work for 20+ points
+clean up code for 6+ points
