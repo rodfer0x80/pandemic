@@ -113,6 +113,8 @@ public class Simulation {
 	private static final int PRINT_HANDS = 17;
 	private static final int PRINT_COLOUR = 18;
 	private static final int COMMUNICATE  = 19;
+	private static int[] moves = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19};
+	private int cubesRemoved = 0;
 	
 	
 	/***Functions for user commands***/
@@ -779,6 +781,7 @@ public class Simulation {
 		    }
 	}
 	
+	// get city root disease colour as in deck
 	private static int getColour(String city) {
 		for(String blueCity:blueCities) {
 			if (city.compareTo(blueCity) == 0) {
@@ -803,8 +806,7 @@ public class Simulation {
 		return -1;
 	}
 	
-	//A stub for now just to put some disease cubes on the board.  Do it properly later.
-
+	// draws 3 waves of cards and infects them with 3 to 1 cubes as in game rules
 	private static void infectCities() {
 		// spread 3 infections, 3 cubes, 2 cubes and 1 cube
 		// effecting 3 cities each
@@ -839,6 +841,7 @@ public class Simulation {
 		}
 	}
 	
+	// find epidemicCity in city array
 	private static int findCity(String epidemicCity) {
 		int nCity = 0;
 		for (String city:cities) {
@@ -850,6 +853,8 @@ public class Simulation {
 		return -1;
 	}
 	
+	// spread epidemic through adjacent cities, recurses if 4 same colour cubes are now in one of the cities
+	// increases outbreak meter
 	private static boolean epidemic(String epidemicCity) {
 		System.out.println("Epidemic outbreak is spreading");
 		outbreaks++;
@@ -974,7 +979,7 @@ public class Simulation {
 		return false;
 	}
 	
-	
+	// epidemic card drawn outbreak (draws from infection deck to pick target cities)
 	private static boolean spreadInfection() {
 		System.out.println("Epidemic card drawn");
 		outbreaks++;
@@ -1118,6 +1123,7 @@ public class Simulation {
 		}
 	}
 	
+	// give disease colour to corresponding cities
 	private static void initCities() {
 		blueCities = Arrays.copyOfRange(cities,0,12);
 		yellowCities = Arrays.copyOfRange(cities,12,24);
@@ -1181,6 +1187,7 @@ public class Simulation {
 		return false;
 	}
 	
+	// win when all disease is cured
 	private static boolean checkWin() {
 		if (cures[0] && cures[1] && cures[2] && cures[3]) {
 			return true;
@@ -1189,6 +1196,7 @@ public class Simulation {
 		}	
 	}
 	
+	// loses when no cubes left for a disease, max outbreaks reached, user deck empty
 	private static boolean checkLoss() {
 		if (blueCubesLeft < 1 || redCubesLeft <1 || yellowCubesLeft <1 ||
 				blackCubesLeft <1) {
@@ -1202,6 +1210,8 @@ public class Simulation {
 		}
 	}
 	
+	// get user command and run action x4
+	// ai agent is kind of silly playing compared to a smart human
 	private static boolean playerTurn() {
 		turnsLeft = 4;
 		int userInput;
@@ -1229,6 +1239,7 @@ public class Simulation {
 		return false;
 	}
 	
+	// randomly shuffle array
 	private static String[] shuffle(String[] array) {	
 		// rebuilt array in random order
 		String[] newArray = new String[array.length];
@@ -1239,6 +1250,7 @@ public class Simulation {
 		return newArray;
 	}
 	
+	// shuffle deck according to rules
 	private static void initDeck() {
 		// shuffle player deck
 		String[] citiesShuffled = shuffle(cities); 
@@ -1324,6 +1336,7 @@ public class Simulation {
 	private static void initResearchStations() {
 		researchStations.add("Atlanta");
 	}
+	
 
 	//The main function of the program.  Enter and exit from here.
 	//It is a simple getInput processInput loop until the game is over.  
