@@ -173,27 +173,28 @@ public class Simulation {
 	}
 	
 	private static void communicate() {
-		System.out.println("["+userNames[1]+"]: give me a command to save to memory");
-		try {
-			String userInput = shellInput.nextLine();
-			String action = userInput.split(" ")[0];
-			String city = null;
-			if (action.compareTo("move") == 0) {
-				city = userInput.split(" ")[1];
-				agentMemory.add(action+" "+city);
-			} else if (userInput.compareTo("remove") == 0) {
-				agentMemory.add(action);
-			} else if (userInput.compareTo("trade") == 0) {
-				agentMemory.add(action);
-			} else {
+		if (agentMemory.size() <= 4) {
+			System.out.println("["+userNames[1]+"]: give me a command to save to memory");
+			try {
+				String userInput = shellInput.nextLine();
+				String action = userInput.split(" ")[0];
+				String city = null;
+				if (action.compareTo("move") == 0) {
+					city = userInput.split(" ")[1];
+					agentMemory.add(action+" "+city);
+				} else if (userInput.compareTo("remove") == 0) {
+					agentMemory.add(action);
+				} else if (userInput.compareTo("trade") == 0) {
+					agentMemory.add(action);
+				} else {
+					System.out.println("Invalid command");
+				}
+			} catch(Exception e) {
+				System.out.printf("Error reading user input: %s", e);
+				e.printStackTrace();
 				System.out.println("Invalid command");
 			}
-		} catch(Exception e) {
-			System.out.printf("Error reading user input: %s", e);
-			e.printStackTrace();
-			System.out.println("Invalid command");
-		}
-			
+		}		
 	}
 	
 	//Make sure the scanner is open, then get the user input and make sure it's reasonable.
@@ -1449,7 +1450,7 @@ public class Simulation {
 			}
 		}
 		
-		for (int card = 0; card<userDeck.size()-1;card++) {
+		for (int card = 0; card<userDeck.size()-2;card++) {
 			for (int p1Card=0; p1Card <4; p1Card++) {
 				if (userDeck.get(card).compareTo(userOneHand.get(p1Card)) == 0) {
 					userDeck.remove(card);
